@@ -1,0 +1,45 @@
+{
+  "name": "@frontier-llm-systems/repo-link",
+  "version": "0.1.0",
+  "description": "A small toolbar component that links to the project's source repository.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "preact": "^10.0.0"
+  },
+  "quartz": {
+    "name": "repo-link",
+    "displayName": "Repo Link",
+    "description": "Toolbar link to the source repository.",
+    "category": "component",
+    "version": "0.1.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "url": "",
+      "label": "Repository"
+    },
+    "components": {
+      "RepoLink": {
+        "displayName": "Repo Link",
+        "defaultPosition": "left",
+        "defaultPriority": 40
+      }
+    }
+  }
+}
