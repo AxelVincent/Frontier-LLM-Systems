@@ -1,0 +1,12 @@
+.git/
+.github/
+node_modules/
+public/
+.quartz/
+.quartz-cache/
+prof/
+*.log
+.DS_Store
+.obsidian/
+private/
+.claude/
