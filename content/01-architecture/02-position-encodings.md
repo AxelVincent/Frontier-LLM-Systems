@@ -13,16 +13,16 @@ aliases:
 
 ## Pourquoi encoder la position
 
-L'opération de self-attention est **permutation-invariante** : sans information de position, le modèle ne peut pas distinguer "le chat mange la souris" de "la souris mange le chat". Un mécanisme d'encodage de position est donc nécessaire.
+L'opération de [[01-architecture/01-transformer-architecture|self-attention]] est **permutation-invariante** : sans information de position, le modèle ne peut pas distinguer "le chat mange la souris" de "la souris mange le chat". Un mécanisme d'encodage de position est donc nécessaire.
 
 > [!example] Intuition
-> Sans signal de position, le Transformer dégénère en **bag-of-tokens** : la sortie pour `[A, B, C]` est identique à celle pour `[C, B, A]`. Tout schéma d'encodage existe pour réinjecter cet ordre, soit dans les embeddings d'entrée (absolu), soit directement dans le calcul d'attention (RoPE, ALiBi).
+> Sans signal de position, le Transformer dégénère en **bag-of-tokens** : la sortie pour `[A, B, C]` est identique à celle pour `[C, B, A]`. Tout schéma d'encodage existe pour réinjecter cet ordre, soit dans les [[04-retrieval-quality/20-rag-architecture|embeddings]] d'entrée (absolu), soit directement dans le calcul d'attention (RoPE, ALiBi).
 
 ## Les approches
 
 ### Sinusoidal (Transformer original)
 
-Vecteurs sinusoïdaux de fréquences variables ajoutés aux embeddings. N'est plus utilisé en LLM moderne.
+Vecteurs sinusoïdaux de fréquences variables ajoutés aux [[04-retrieval-quality/20-rag-architecture|embeddings]]. N'est plus utilisé en LLM moderne.
 
 ### Learned absolute
 
@@ -38,7 +38,7 @@ Ajoute un **biais linéaire négatif** aux attention scores en fonction de la di
 
 ### RoPE (Rotary Position Embedding)
 
-**Le standard moderne** (Llama, Mistral, Mixtral, DeepSeek, Qwen).
+**Le standard moderne** (Llama, Mistral, [[01-architecture/05-mixture-of-experts|Mixtral]], DeepSeek, Qwen).
 
 **Idée** : appliquer une **rotation** dans le plan complexe aux vecteurs Q et K en fonction de leur position. Le produit scalaire `Q · K^T` devient ainsi sensible à la **distance relative** entre tokens.
 
@@ -58,7 +58,7 @@ Propriétés :
 
 ### NoPE (No Positional Encoding)
 
-Certains travaux récents (Kazemnejad et al. 2023) montrent que des Transformers decoder-only **sans aucun encodage de position** peuvent atteindre des performances compétitives, le masque causal suffisant à induire un biais positionnel implicite. Encore expérimental.
+Certains travaux récents (Kazemnejad et al. 2023) montrent que des Transformers decoder-only **sans aucun encodage de position** peuvent atteindre des performances compétitives, le [[01-architecture/01-transformer-architecture|masque causal]] suffisant à induire un biais positionnel implicite. Encore expérimental.
 
 ## Long context et RoPE scaling
 
@@ -83,7 +83,7 @@ Adopté notamment par les variantes long-context de Llama et Mistral.
 
 ## Sliding window attention
 
-Approche alternative : restreindre l'attention de chaque token aux **W tokens précédents** au lieu de toute la séquence. Le KV cache est borné par `W` indépendamment de la longueur du contexte.
+Approche alternative : restreindre l'attention de chaque token aux **W tokens précédents** au lieu de toute la séquence. Le [[02-inference/08-kv-cache-management|KV cache]] est borné par `W` indépendamment de la longueur du contexte.
 
 - **Mistral 7B** : sliding window de 4096 tokens. Combiné à des layers profondes, l'information se propage au-delà de la fenêtre.
 - Avantage : KV cache borné.

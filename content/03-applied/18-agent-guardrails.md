@@ -21,7 +21,7 @@ Un agent loop sans garde-fous présente plusieurs risques :
 - **Stuck on a sub-problem** : l'agent essaie 50 fois le même tool qui échoue.
 - **Catastrophic action** : l'agent exécute une commande destructive qui matche localement son objectif.
 
-C'est au harness de poser des **budgets** et des **termination conditions**.
+C'est au [[03-applied/13-harness-engineering|harness]] de poser des **budgets** et des **termination conditions**.
 
 ## Les budgets
 
@@ -35,7 +35,7 @@ C'est au harness de poser des **budgets** et des **termination conditions**.
 
 **Token budget**
 - "Max 100k tokens consommés par session."
-- Au-delà, compaction forcée ou termination.
+- Au-delà, [[03-applied/14-context-engineering|compaction]] forcée ou termination.
 
 **Wall-clock budget**
 - "Max 5 minutes par session."
@@ -62,7 +62,7 @@ L'agent doit s'arrêter dans les cas suivants :
 
 **3. Erreur non-recoverable**
 - Tool catastrophe (auth perdue, permission révoquée).
-- Modèle qui hallucine en boucle.
+- Modèle qui [[01-architecture/07-post-training-alignment|hallucine]] en boucle.
 
 **4. Stuck detection**
 - Même tool call répété N fois avec mêmes args → stuck.
@@ -74,16 +74,16 @@ L'agent doit s'arrêter dans les cas suivants :
 
 ## Guardrails au-delà des budgets
 
-**Input filtering**
-- Refus des tasks malveillantes (prompt injection, demande d'action illégale). Voir [[05-ops-safety/25-safety-engineering]].
+**[[05-ops-safety/25-safety-engineering|Input filtering]]**
+- Refus des tasks malveillantes ([[05-ops-safety/25-safety-engineering|prompt injection]], demande d'action illégale). Voir [[05-ops-safety/25-safety-engineering]].
 - Classification du user input avant l'entrée dans la loop.
 
-**Output filtering**
-- Avant de renvoyer la réponse à l'utilisateur : check PII leakage, content moderation, format compliance.
+**[[05-ops-safety/25-safety-engineering|Output filtering]]**
+- Avant de renvoyer la réponse à l'utilisateur : check [[05-ops-safety/25-safety-engineering|PII]] leakage, content moderation, format compliance.
 
 **Tool sandboxing**
 - Chaque tool call exécuté dans un sandbox isolé (par session, par tenant).
-- Permission boundary stricte (un tool ne voit que les données du tenant courant). Voir [[05-ops-safety/26-multi-tenant-isolation]].
+- [[03-applied/17-function-calling-reliability|Permission boundary]] stricte (un tool ne voit que les données du tenant courant). Voir [[05-ops-safety/26-multi-tenant-isolation]].
 
 **Reflection / self-critique**
 - Avant action critique : prompt secondaire demandant au modèle "are you sure ? Why ?".
@@ -128,7 +128,7 @@ function trackCost(usage: TokenUsage, model: string): number {
 ## Failure modes des guardrails eux-mêmes
 
 - **Trop strict** : l'agent termine prématurément sur des tasks légitimes.
-- **Trop permissif** : runaway agent.
+- **Trop permissif** : [[06-meta/29-production-failure-modes|runaway agent]].
 - **Stuck detection défaillante** : l'agent répète avec des args très légèrement différents pour passer le check.
 - **Termination non-graceful** : l'agent stoppe au milieu d'une action critique, partial state.
 

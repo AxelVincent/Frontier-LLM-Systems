@@ -23,26 +23,26 @@ Approche naïve : on attend que N requêtes arrivent, on les regroupe en batch, 
 Synonymes : **dynamic batching**, **in-flight batching**.
 
 - À chaque **step de génération** (chaque token), le scheduler évalue les requêtes actives.
-- Lorsqu'une requête termine (EOS ou max_tokens), elle quitte le batch.
-- Lorsqu'une nouvelle requête arrive, elle est intégrée dès qu'il y a de la place (KV cache disponible).
+- Lorsqu'une requête termine ([[01-architecture/04-tokenization|EOS]] ou max_tokens), elle quitte le batch.
+- Lorsqu'une nouvelle requête arrive, elle est intégrée dès qu'il y a de la place ([[02-inference/08-kv-cache-management|KV cache]] disponible).
 - Le batch est **dynamique** : sa composition évolue à chaque step.
 
 ## Pourquoi cette approche change tout
 
-Le decode est memory-bound ([[02-inference/09-prefill-vs-decode]]). Le GPU passe son temps à lire le KV cache plutôt qu'à compute. L'ajout d'une requête au batch a donc un coût compute marginal (calcul d'une colonne de Q supplémentaire). Le throughput scale presque linéairement avec le batch size, jusqu'à saturation mémoire (KV cache total).
+Le [[02-inference/09-prefill-vs-decode|decode]] est [[02-inference/09-prefill-vs-decode|memory-bound]] ([[02-inference/09-prefill-vs-decode]]). Le GPU passe son temps à lire le KV cache plutôt qu'à compute. L'ajout d'une requête au batch a donc un coût compute marginal (calcul d'une colonne de Q supplémentaire). Le throughput scale presque linéairement avec le batch size, jusqu'à saturation mémoire (KV cache total).
 
 Gain typique vs static batching : **5x à 20x** sur le throughput.
 
 ## PagedAttention
 
-PagedAttention rend ce schéma viable. Sans pages, ajouter et retirer dynamiquement des requêtes du batch créerait une fragmentation catastrophique. Avec pages :
+PagedAttention rend ce schéma viable. Sans pages, ajouter et retirer dynamiquement des requêtes du batch créerait une [[02-inference/08-kv-cache-management|fragmentation]] catastrophique. Avec pages :
 
 - Chaque séquence est une liste de pointers vers des pages KV.
 - Allocation et désallocation atomiques au niveau page.
 - Sharing trivial entre séquences (plusieurs pointers vers la même page).
 
 > [!example] Intuition — virtual memory pour le KV cache
-> PagedAttention applique au KV cache le principe de pagination d'un OS. Avant : allocation contiguë au `max_seq_len` → fragmentation interne (jusqu'à 80% inutilisé). Après : le KV est découpé en pages de taille fixe (typiquement 16 tokens), chaque séquence détient une *page table* qui pointe vers ses pages. Deux conséquences : zéro fragmentation, et le **prefix sharing** devient trivial — deux séquences avec le même préfixe pointent vers les mêmes pages physiques.
+> PagedAttention applique au [[02-inference/08-kv-cache-management|KV cache]] le principe de pagination d'un OS. Avant : allocation contiguë au `max_seq_len` → [[02-inference/08-kv-cache-management|fragmentation]] interne (jusqu'à 80% inutilisé). Après : le KV est découpé en pages de taille fixe (typiquement 16 tokens), chaque séquence détient une *page table* qui pointe vers ses pages. Deux conséquences : zéro fragmentation, et le **prefix sharing** devient trivial — deux séquences avec le même préfixe pointent vers les mêmes pages physiques.
 
 C'est l'innovation centrale de vLLM. Avant vLLM (2023), les implémentations équivalentes étaient hand-rolled et fragiles. Détails sur la gestion mémoire : [[02-inference/08-kv-cache-management]].
 
@@ -51,13 +51,13 @@ C'est l'innovation centrale de vLLM. Avant vLLM (2023), les implémentations éq
 | Levier | Gain typique | Coût |
 |---|---|---|
 | Continuous batching | 5-20x | Implémentation complexe (vLLM le fournit) |
-| Tensor parallelism (TP=2,4,8) | Permet plus gros modèle | Communication all-reduce |
-| Pipeline parallelism (PP) | Permet modèle très volumineux | Bubble overhead, latency individuelle dégradée |
-| KV cache quantization | 2-4x batch size max | Légère perte qualité |
-| Speculative decoding | 1.5-3x throughput | Mémoire pour draft model |
-| FlashAttention | 2-4x sur attention | Aucun (gain pur) |
+| [[01-architecture/06-distributed-training|Tensor parallelism]] (TP=2,4,8) | Permet plus gros modèle | Communication [[01-architecture/06-distributed-training|all-reduce]] |
+| [[01-architecture/06-distributed-training|Pipeline parallelism]] (PP) | Permet modèle très volumineux | [[01-architecture/06-distributed-training|Bubble]] overhead, latency individuelle dégradée |
+| [[02-inference/08-kv-cache-management|KV cache quantization]] | 2-4x batch size max | Légère perte qualité |
+| [[02-inference/11-speculative-quant-distill|Speculative decoding]] | 1.5-3x throughput | Mémoire pour [[02-inference/11-speculative-quant-distill|draft model]] |
+| [[01-architecture/03-flash-attention|FlashAttention]] | 2-4x sur attention | Aucun (gain pur) |
 | Chunked prefill | Mix prefill+decode dans le batch | Légère latency overhead |
-| Disaggregated serving | TTFT et TPOT optimisés séparément | Infrastructure plus complexe |
+| [[02-inference/09-prefill-vs-decode|Disaggregated serving]] | [[02-inference/09-prefill-vs-decode|TTFT]] et [[02-inference/09-prefill-vs-decode|TPOT]] optimisés séparément | Infrastructure plus complexe |
 
 ## Métriques de throughput
 

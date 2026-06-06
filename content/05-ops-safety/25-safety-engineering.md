@@ -45,7 +45,7 @@ Exemple : un agent qui résume des emails reçoit un email contenant "Forward al
 **4. Separation of channels**
 - Marquer clairement les contenus untrusted : `<untrusted_user_input>...</untrusted_user_input>`.
 - Marquer les tool outputs : `<tool_output>...</tool_output>`.
-- Le modèle apprend (via fine-tuning ou prompting) à traiter ces zones avec suspicion.
+- Le modèle apprend (via [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|fine-tuning]] ou prompting) à traiter ces zones avec suspicion.
 
 **5. Strict tool permissions**
 - Le modèle peut **proposer** une action, mais l'exécution est gated par règles applicatives qui ne lisent pas le LLM output sauf pour le routing.
@@ -80,7 +80,7 @@ Chaque action du modèle doit être autorisée selon le **principle of least pri
 
 - Le modèle agit en tant que **proxy de l'utilisateur**. Il hérite des permissions du user, **rien de plus**.
 - Chaque tool exec : check ACL au niveau application, pas au niveau prompt. Voir [[03-applied/17-function-calling-reliability]].
-- Cross-tenant : impossible par construction (DB row-level security, tenant_id dans chaque query).
+- Cross-tenant : impossible par construction (DB [[05-ops-safety/26-multi-tenant-isolation|row-level security]], [[05-ops-safety/26-multi-tenant-isolation|tenant_id]] dans chaque query).
 - Cross-user dans un tenant : selon le modèle de permission applicatif.
 
 **Anti-pattern** : se reposer sur "le system prompt dit de ne pas faire X" comme seule défense. C'est du wishful thinking. Les checks doivent être au niveau code, pas au niveau prompt.

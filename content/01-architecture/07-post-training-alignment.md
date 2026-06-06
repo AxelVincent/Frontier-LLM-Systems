@@ -26,7 +26,7 @@ Le pipeline canonique moderne :
 
 ## SFT (Supervised Fine-Tuning)
 
-Fine-tuning standard sur un dataset de paires (instruction, response) curated.
+[[06-meta/27-ft-vs-icl-vs-rag-vs-distill|Fine-tuning]] standard sur un dataset de paires (instruction, response) curated.
 
 - Le modèle apprend à produire des réponses dans le style et le format souhaités.
 - Format de prompt typique : `<|user|> question <|assistant|> answer`.
@@ -35,7 +35,7 @@ Fine-tuning standard sur un dataset de paires (instruction, response) curated.
 
 ### Instruction tuning
 
-Variante de SFT où le dataset contient une **diversité d'instructions** couvrant de nombreuses tâches (question answering, summarization, code, reasoning, etc.). Améliore la généralisation zero-shot.
+Variante de SFT où le dataset contient une **diversité d'instructions** couvrant de nombreuses tâches (question answering, summarization, code, reasoning, etc.). Améliore la généralisation [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|zero-shot]].
 
 Datasets canoniques : FLAN, Alpaca, ShareGPT, Open-Hermes, OpenAssistant.
 
@@ -55,7 +55,7 @@ Entraîner un modèle séparé qui prédit la préférence humaine à partir d'u
 P(A > B) = sigmoid(reward(A) - reward(B))
 ```
 
-### 3. RL fine-tuning (PPO)
+### 3. RL [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|fine-tuning]] (PPO)
 
 Optimiser le modèle pour **maximiser le reward** prédit par le reward model, avec une contrainte de **KL divergence** pour rester proche du modèle SFT initial (empêche le reward hacking).
 

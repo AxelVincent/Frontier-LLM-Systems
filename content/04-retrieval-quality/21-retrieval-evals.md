@@ -29,7 +29,7 @@ Un système RAG fonctionne-t-il ? Sans mesure, on décide au "feeling", et on d�
 
 ### Generation-side (qualité de la réponse finale)
 
-- **Faithfulness / Grounding** : la réponse est-elle supportée par les chunks retrieved ? (Pas d'hallucination au-delà du contexte fourni.)
+- **Faithfulness / Grounding** : la réponse est-elle supportée par les chunks retrieved ? (Pas d'[[01-architecture/07-post-training-alignment|hallucination]] au-delà du contexte fourni.)
 - **Answer relevancy** : la réponse adresse-t-elle la question ?
 - **Context relevancy** : les chunks fournis sont-ils pertinents pour la question ?
 - **Citation accuracy** : si la réponse cite des sources, les citations correspondent-elles au contenu cité ?
@@ -41,7 +41,7 @@ Un système RAG fonctionne-t-il ? Sans mesure, on décide au "feeling", et on d�
 - **TruLens** : eval + tracing.
 - **DeepEval** : pytest pour LLM.
 - **Phoenix (Arize)** : eval + observability.
-- **LangSmith** : eval intégré dans l'écosystème LangChain.
+- **[[05-ops-safety/23-llm-observability|LangSmith]]** : eval intégré dans l'écosystème LangChain.
 
 ## Grounding et attribution
 
@@ -52,7 +52,7 @@ Un système RAG fonctionne-t-il ? Sans mesure, on décide au "feeling", et on d�
 - **Inline citations** : "Selon le document [chunk_3], X est vrai. Selon [chunk_7], Y."
 - **Footnote-style** : réponse en prose, références à la fin.
 - **Structured** : output JSON avec `claim` + `source_chunk_ids`.
-- **Auto-citation via constrained decoding** : forcer le modèle à émettre des `<source id="X"/>` tags, validés contre les chunks fournis. Voir [[03-applied/16-structured-outputs]].
+- **Auto-citation via [[03-applied/16-structured-outputs|constrained decoding]]** : forcer le modèle à émettre des `<source id="X"/>` tags, validés contre les chunks fournis. Voir [[03-applied/16-structured-outputs]].
 
 ### Eval de l'attribution
 
@@ -68,11 +68,11 @@ Un système RAG fonctionne-t-il ? Sans mesure, on décide au "feeling", et on d�
 
 ## Workflow d'eval
 
-1. **Constituer un golden set** : 100-500 queries avec (relevant_chunks, ideal_answer). Labellé par humains ou via LLM-as-judge avec human spot-check.
+1. **Constituer un [[04-retrieval-quality/22-evals|golden set]]** : 100-500 queries avec (relevant_chunks, ideal_answer). Labellé par humains ou via LLM-as-judge avec human spot-check.
 2. **Run le pipeline** sur ce set, collecter les outputs.
 3. **Compute metrics** : recall@k, precision@k, faithfulness, citation accuracy.
-4. **Track over time** : à chaque changement (chunking strategy, embedding model, reranker), re-run, comparer.
-5. **Adversarial set** : queries spécifiquement designed pour casser (ambiguës, hors-sujet, multi-hop).
+4. **Track over time** : à chaque changement ([[04-retrieval-quality/20-rag-architecture|chunking]] strategy, embedding model, reranker), re-run, comparer.
+5. **[[04-retrieval-quality/22-evals|Adversarial set]]** : queries spécifiquement designed pour casser (ambiguës, hors-sujet, multi-hop).
 
 ## Vocabulaire clé
 

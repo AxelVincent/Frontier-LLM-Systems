@@ -75,7 +75,7 @@ Choix typiques :
 - **Petit vocab** : plus de tokens par mot, séquences plus longues, embedding matrix plus petite (moins de paramètres dans la projection finale).
 - **Grand vocab** : moins de tokens par mot, séquences plus courtes, embedding matrix plus grande (paramètres significatifs : pour 128k × d_model=4096, on parle de 500M paramètres).
 
-L'optimum dépend du compromis entre coût compute (séquence longue = prefill long) et coût mémoire (embedding matrix grande).
+L'optimum dépend du compromis entre coût compute (séquence longue = [[02-inference/09-prefill-vs-decode|prefill]] long) et coût mémoire (embedding matrix grande).
 
 ## Tokenization multilingue
 

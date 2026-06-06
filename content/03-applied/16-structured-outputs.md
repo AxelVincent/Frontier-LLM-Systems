@@ -17,7 +17,7 @@ Le modèle est sollicité pour produire du JSON conforme à un schéma. Le modè
 
 - JSON malformé (virgules en trop, guillemets manquants).
 - Schema mismatch (champ manquant, type incorrect, enum hors-vocabulaire).
-- Hallucination de champs non-demandés.
+- [[01-architecture/07-post-training-alignment|Hallucination]] de champs non-demandés.
 - Truncation au milieu d'un objet (max_tokens atteint).
 - Sortie en français au lieu d'anglais (ou inverse).
 
@@ -31,14 +31,14 @@ Le modèle est sollicité pour produire du JSON conforme à un schéma. Le modè
 - Syntaxe JSON garantie.
 - **Pas** de garantie sur le schéma.
 
-**3. Structured output / function calling avec schema**
+**3. Structured output / [[03-applied/17-function-calling-reliability|function calling]] avec schema**
 - OpenAI structured outputs (response_format: json_schema, strict: true) : garantit syntaxe + schema.
 - Anthropic tool use : définition d'un schema rempli par le modèle. Mêmes garanties.
 - Mistral function calling : équivalent.
-- **Technique sous-jacente** : **constrained decoding** (alias guided decoding). À chaque step, le sampler n'autorise que les tokens qui maintiennent le préfixe dans un état valide selon une grammaire (compilée en finite-state machine ou regex). Outils : outlines, lm-format-enforcer, XGrammar, guidance.
+- **Technique sous-jacente** : **constrained decoding** (alias guided decoding). À chaque step, le sampler n'autorise que les [[01-architecture/04-tokenization|tokens]] qui maintiennent le préfixe dans un état valide selon une grammaire (compilée en finite-state machine ou regex). Outils : outlines, lm-format-enforcer, XGrammar, guidance.
 
 > [!example] Intuition — contrainte au niveau du sampler
-> Le sampling standard tire un token dans la distribution `softmax(logits)` sur tout le vocabulaire. En constrained decoding, la grammaire (compilée en FSM ou regex) calcule à chaque step le **set de tokens valides** étant donné le préfixe déjà émis, et on masque les logits hors de ce set avant le softmax. Le modèle reste libre de choisir, mais uniquement parmi des continuations syntaxiquement valides. C'est ce qui rend `strict: true` réellement strict — la contrainte n'est plus déclarative, elle est appliquée mécaniquement.
+> Le sampling standard tire un token dans la distribution `softmax(logits)` sur tout le [[01-architecture/04-tokenization|vocabulaire]]. En constrained decoding, la grammaire (compilée en FSM ou regex) calcule à chaque step le **set de tokens valides** étant donné le préfixe déjà émis, et on masque les logits hors de ce set avant le [[01-architecture/01-transformer-architecture|softmax]]. Le modèle reste libre de choisir, mais uniquement parmi des continuations syntaxiquement valides. C'est ce qui rend `strict: true` réellement strict — la contrainte n'est plus déclarative, elle est appliquée mécaniquement.
 
 **4. Constrained decoding custom**
 - Sur un modèle self-hosted, on peut imposer sa propre grammaire (BNF, regex, JSON schema custom).

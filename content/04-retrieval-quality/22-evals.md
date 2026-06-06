@@ -31,8 +31,8 @@ Lorsqu'un système LLM est déployé en production, les questions critiques devi
 
 ### 3. Adversarial tests
 
-- Cases designed pour casser : prompt injection, edge cases, multi-hop reasoning, distractors.
-- Sources : red team manuelle, datasets publics (jailbreak datasets, MMLU Pro, GPQA), génération auto via LLM.
+- Cases designed pour casser : [[05-ops-safety/25-safety-engineering|prompt injection]], edge cases, multi-hop reasoning, distractors.
+- Sources : red team manuelle, datasets publics ([[05-ops-safety/25-safety-engineering|jailbreak datasets]], MMLU Pro, GPQA), génération auto via LLM.
 - Métrique : pass rate sur le adversarial set.
 
 ### 4. LLM-as-judge
@@ -58,7 +58,7 @@ Workflow mature :
 
 1. **Définir le problème** : "réponses fidèles au doc fourni, en français, sans citations hallucinées".
 2. **Constituer le golden set** initial : 30-100 examples couvrant les cases représentatifs.
-3. **Définir les métriques** : faithfulness > 95%, hallucinated citations = 0, latency p99 < 3s.
+3. **Définir les métriques** : [[04-retrieval-quality/21-retrieval-evals|faithfulness]] > 95%, [[01-architecture/07-post-training-alignment|hallucinated]] citations = 0, latency p99 < 3s.
 4. **Build une baseline** : un pipeline naïf.
 5. **Mesurer** : scores sur golden set.
 6. **Iterate** : modifier une variable à la fois, mesurer.

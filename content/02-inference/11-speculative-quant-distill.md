@@ -44,11 +44,11 @@ Ces trois techniques sont fréquemment confondues. Elles résolvent des problèm
 
 ## Quantization
 
-**Principe** : représenter les weights (et parfois les activations et le KV cache) avec moins de bits que les originaux (FP16/BF16).
+**Principe** : représenter les weights (et parfois les activations et le [[02-inference/08-kv-cache-management|KV cache]]) avec moins de bits que les originaux (FP16/BF16).
 
 - FP16 → INT8 = 2x mémoire, ~2x throughput, qualité quasi-intacte (W8A8 ou W8A16).
-- FP16 → INT4 = 4x mémoire, qualité dégradée sur certains tasks, nécessite calibration soignée (GPTQ, AWQ).
-- FP16 → FP8 = 2x, hardware-accelerated sur H100, qualité quasi-intacte.
+- FP16 → INT4 = 4x mémoire, qualité dégradée sur certains tasks, nécessite calibration soignée ([[02-inference/12-quantization-deep-dive|GPTQ]], [[02-inference/12-quantization-deep-dive|AWQ]]).
+- FP16 → [[02-inference/12-quantization-deep-dive|FP8]] = 2x, hardware-accelerated sur H100, qualité quasi-intacte.
 
 **Le modèle est le même** (mêmes paramètres entraînés), avec une précision réduite. Détails : [[02-inference/12-quantization-deep-dive]].
 
@@ -72,7 +72,7 @@ Ces trois techniques sont fréquemment confondues. Elles résolvent des problèm
 
 | Technique | Qualité | Mémoire | Latency | Effort |
 |---|---|---|---|---|
-| Speculative decoding | Identique | + (draft model) | 1.5-3x mieux | Moyen (vLLM le supporte) |
+| Speculative decoding | Identique | + (draft model) | 1.5-3x mieux | Moyen ([[02-inference/10-continuous-batching-paged-attention|vLLM]] le supporte) |
 | Quantization | Quasi-identique à très dégradée | 2-8x mieux | 1.5-2x mieux | Faible (modèles disponibles) |
 | Distillation | Significativement moins bonne | 5-50x mieux | 5-50x mieux | Élevé (full training run) |
 
@@ -81,7 +81,7 @@ Ces trois techniques sont fréquemment confondues. Elles résolvent des problèm
 - Budget latency strict, aucune perte qualité tolérable → speculative decoding.
 - Budget mémoire serré (déploiement edge, ou cost-sensitive) → quantization INT8 d'abord, puis INT4 si la qualité tient.
 - Workload bien défini, volume important, légère perte qualité tolérable → distillation. C'est le projet le plus lourd (data, training, eval).
-- En production chez les providers : les trois sont combinées. Mistral Small (distillation) servi avec quantization FP8 et speculative decoding via continuous batching.
+- En production chez les providers : les trois sont combinées. Mistral Small (distillation) servi avec quantization FP8 et speculative decoding via [[02-inference/10-continuous-batching-paged-attention|continuous batching]].
 
 ## Vocabulaire clé
 

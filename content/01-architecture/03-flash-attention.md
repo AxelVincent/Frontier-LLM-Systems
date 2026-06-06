@@ -21,7 +21,7 @@ L'attention naïve est implémentée en trois étapes :
 Le problème : les matrices `S` et `P` sont de taille `N²`. Pour `N = 8192` (un context long), `S` fait 67M d'éléments. Elle doit être **matérialisée en HBM** (high bandwidth memory) du GPU, alors que l'attention est mathématiquement décomposable. Le bottleneck devient le **memory I/O** entre HBM et SRAM (la mémoire on-chip rapide), pas le compute.
 
 > [!example] Intuition — hiérarchie mémoire GPU
-> Même logique que la hiérarchie L1/L2/DRAM d'un CPU. La **HBM** est la DRAM du GPU : large (~80 GB sur H100) mais ~1.5 TB/s. La **SRAM** est le cache on-chip : ~200 KB par streaming multiprocessor mais ~10× plus rapide. L'attention naïve est *memory-bound* parce qu'elle matérialise la matrice `N × N` en HBM. FlashAttention garde les fragments en SRAM le temps du calcul et ne réécrit en HBM que la sortie compacte.
+> Même logique que la hiérarchie L1/L2/DRAM d'un CPU. La **HBM** est la DRAM du GPU : large (~80 GB sur H100) mais ~1.5 TB/s. La **SRAM** est le cache on-chip : ~200 KB par streaming multiprocessor mais ~10× plus rapide. L'attention naïve est *[[02-inference/09-prefill-vs-decode|memory-bound]]* parce qu'elle matérialise la matrice `N × N` en HBM. FlashAttention garde les fragments en SRAM le temps du calcul et ne réécrit en HBM que la sortie compacte.
 
 ## FlashAttention v1 (Dao et al. 2022)
 
@@ -40,7 +40,7 @@ Le problème : les matrices `S` et `P` sont de taille `N²`. Pour `N = 8192` (un
 
 ### Online softmax
 
-Le softmax est numériquement stable lorsqu'on soustrait le max avant l'exponentielle. En tiling, on ne connaît pas le max global avant la fin. L'online softmax maintient un running max `m` et une running sum `l`, mis à jour à chaque bloc, et **renormalise** rétroactivement les contributions précédentes lorsqu'un nouveau max est rencontré.
+Le [[01-architecture/01-transformer-architecture|softmax]] est numériquement stable lorsqu'on soustrait le max avant l'exponentielle. En tiling, on ne connaît pas le max global avant la fin. L'online softmax maintient un running max `m` et une running sum `l`, mis à jour à chaque bloc, et **renormalise** rétroactivement les contributions précédentes lorsqu'un nouveau max est rencontré.
 
 ### Bénéfices
 
@@ -61,7 +61,7 @@ Optimisations sur la parallélisation et la réduction des opérations non-matmu
 Spécifique au hardware Hopper (H100). Exploite :
 - Les nouveaux instruction sets matmul de Hopper (WGMMA).
 - L'asynchronie compute/data movement (TMA — Tensor Memory Accelerator).
-- Le format FP8 hardware-accelerated.
+- Le format [[02-inference/12-quantization-deep-dive|FP8]] hardware-accelerated.
 
 Gain typique : 1.5-2x supplémentaire vs v2 sur H100.
 
@@ -72,15 +72,15 @@ Le backward pass naïf nécessiterait de matérialiser la matrice `P` pour le gr
 ## Intégration en pratique
 
 - **PyTorch** : `scaled_dot_product_attention` utilise FlashAttention automatiquement quand les conditions sont réunies (depuis PyTorch 2.0).
-- **vLLM, TensorRT-LLM, SGLang** : intégration native pour le serving.
+- **[[02-inference/10-continuous-batching-paged-attention|vLLM]], TensorRT-LLM, SGLang** : intégration native pour le serving.
 - **Triton** : implémentations alternatives en kernel custom, parfois utilisées pour des variantes (sliding window, ALiBi).
 - **xFormers** : librairie qui expose des memory-efficient attention kernels variés.
 
 ## Variantes et extensions
 
-- **FlashAttention avec sliding window** : tiling adapté pour ne considérer que les K_j dans la fenêtre.
-- **FlashAttention avec ALiBi** : intégration du biais linéaire dans le kernel.
-- **FlashDecoding** : variante optimisée pour la phase de decode (un seul query token, beaucoup de KV). Réorganise la parallélisation pour saturer le GPU même avec N_q = 1.
+- **FlashAttention avec [[01-architecture/02-position-encodings|sliding window]]** : tiling adapté pour ne considérer que les K_j dans la fenêtre.
+- **FlashAttention avec [[01-architecture/02-position-encodings|ALiBi]]** : intégration du biais linéaire dans le kernel.
+- **FlashDecoding** : variante optimisée pour la phase de [[02-inference/09-prefill-vs-decode|decode]] (un seul query token, beaucoup de KV). Réorganise la parallélisation pour saturer le GPU même avec N_q = 1.
 
 ## Vocabulaire clé
 

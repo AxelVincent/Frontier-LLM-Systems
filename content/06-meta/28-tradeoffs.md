@@ -20,18 +20,18 @@ Le inference stack se tune selon **latency / quality / cost / reliability**. Les
 Composants :
 - Network (client → API).
 - Queue time (provider load).
-- Prefill time (TTFT). Voir [[02-inference/09-prefill-vs-decode]].
-- Decode time (TPOT × n_output_tokens).
+- [[02-inference/09-prefill-vs-decode|Prefill time]] ([[02-inference/09-prefill-vs-decode|TTFT]]). Voir [[02-inference/09-prefill-vs-decode]].
+- [[02-inference/09-prefill-vs-decode|Decode time]] ([[02-inference/09-prefill-vs-decode|TPOT]] × n_output_tokens).
 - Tool call latency (si agent).
 - Post-processing.
 
 Leviers de réduction :
 - Petit modèle (quality trade-off).
 - Quantization (légère quality trade-off). Voir [[02-inference/12-quantization-deep-dive]].
-- Speculative decoding (lossless). Voir [[02-inference/11-speculative-quant-distill]].
-- Prompt caching (cache hit). Voir [[03-applied/15-prompt-vs-semantic-caching]].
+- [[02-inference/11-speculative-quant-distill|Speculative decoding]] (lossless). Voir [[02-inference/11-speculative-quant-distill]].
+- [[03-applied/15-prompt-vs-semantic-caching|Prompt caching]] (cache hit). Voir [[03-applied/15-prompt-vs-semantic-caching]].
 - Réduction du context ([[03-applied/14-context-engineering]]).
-- FlashAttention, paged attention (côté serving).
+- [[01-architecture/03-flash-attention|FlashAttention]], [[02-inference/08-kv-cache-management|paged attention]] (côté serving).
 - Streaming pour la latency perçue.
 - Co-location géographique.
 
@@ -47,8 +47,8 @@ Composants :
 Leviers :
 - Plus gros modèle.
 - Meilleur retrieved context. Voir [[04-retrieval-quality/20-rag-architecture]].
-- Few-shot examples.
-- Reflection / self-critique.
+- [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|Few-shot examples]].
+- [[03-applied/18-agent-guardrails|Reflection]] / self-critique.
 - Multi-judge / ensemble.
 
 ## Cost
@@ -62,8 +62,8 @@ Composants :
 Leviers :
 - Petit modèle où possible (routing). Voir [[03-applied/19-model-routing-fallback]].
 - Caching (prompt, semantic).
-- Distillation.
-- Quantization.
+- [[02-inference/11-speculative-quant-distill|Distillation]].
+- [[02-inference/12-quantization-deep-dive|Quantization]].
 - Output max_tokens calibré.
 - Batch processing offline.
 
@@ -71,17 +71,17 @@ Leviers :
 
 Composants :
 - Provider uptime.
-- Rate limits.
+- [[03-applied/19-model-routing-fallback|Rate limits]].
 - Schema validation pass rate.
 - Tool success rate.
 - Agent termination correctness.
 
 Leviers :
-- Fallback chains.
-- Hedging.
-- Circuit breakers.
+- [[03-applied/16-structured-outputs|Fallback chains]].
+- [[03-applied/19-model-routing-fallback|Hedging]].
+- [[03-applied/19-model-routing-fallback|Circuit breakers]].
 - Repair loops. Voir [[03-applied/16-structured-outputs]].
-- Multi-provider.
+- [[03-applied/19-model-routing-fallback|Multi-provider]].
 
 ## Les trade-offs concrets
 
@@ -90,7 +90,7 @@ Leviers :
 
 **Quality ↔ Latency**
 - Reflection / self-critique = qualité supérieure + latency supérieure (1 call de plus).
-- Cross-encoder reranker = retrieval supérieur + 100-200ms de latency ajoutée.
+- [[04-retrieval-quality/20-rag-architecture|Cross-encoder reranker]] = retrieval supérieur + 100-200ms de latency ajoutée.
 
 **Cost ↔ Latency**
 - Hedging (lancer sur 2 providers) = p99 latency réduite + cost ×2.
@@ -110,7 +110,7 @@ Le système opère sur une Pareto frontier. Améliorer une dimension dégrade un
 
 Exceptions (gains gratuits) :
 - FlashAttention.
-- Continuous batching. Voir [[02-inference/10-continuous-batching-paged-attention]].
+- [[02-inference/10-continuous-batching-paged-attention|Continuous batching]]. Voir [[02-inference/10-continuous-batching-paged-attention]].
 - Paged attention.
 - Speculative decoding (lossless).
 - Prompt caching.
@@ -125,7 +125,7 @@ Lorsqu'un gain gratuit est disponible, il doit être pris. Le reste relève de l
 
 Choix :
 - Routing classifier-based : 80% queries simples → Mistral Small, 20% complexes → Large.
-- RAG hybrid search + reranker (qualité +30%).
+- RAG [[04-retrieval-quality/20-rag-architecture|hybrid search]] + reranker (qualité +30%).
 - Prompt caching sur system prompt + docs (cost ×0.3 sur cache hits).
 - Continuous batching côté serving.
 - Repair loop max 2 retries.
@@ -139,9 +139,9 @@ Choix :
 - Mistral Large par défaut (quality > latency unitaire).
 - Strict budgets : max 20 iter, max $0.50. Voir [[03-applied/18-agent-guardrails]].
 - Tool layer avec idempotency.
-- Stuck detection.
+- [[03-applied/18-agent-guardrails|Stuck detection]].
 - Observability dense (chaque step traced). Voir [[05-ops-safety/23-llm-observability]].
-- Approval gates sur actions critiques.
+- [[03-applied/18-agent-guardrails|Approval gates]] sur actions critiques.
 
 ## Vocabulaire clé
 

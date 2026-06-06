@@ -20,11 +20,11 @@ Le Transformer (Vaswani et al. 2017) est l'architecture qui sous-tend l'ensemble
 3. **Layer normalization** appliquée avant chaque sous-bloc (pré-norm) ou après (post-norm).
 4. **Residual connections** autour de chaque sous-bloc.
 
-L'output passe ensuite par une projection finale (`lm_head`) sur le vocabulaire pour produire les logits.
+L'output passe ensuite par une projection finale (`lm_head`) sur le [[01-architecture/04-tokenization|vocabulaire]] pour produire les logits.
 
 ## Self-attention
 
-L'opération centrale. Pour chaque token, on calcule :
+L'opération centrale. Pour chaque [[01-architecture/04-tokenization|token]], on calcule :
 
 ```
 Q = X · W_Q
@@ -52,7 +52,7 @@ Chaque head apprend un pattern d'attention distinct (positionnel, sémantique, s
 
 ### MQA et GQA
 
-L'innovation pour réduire la taille du **KV cache** (voir [[02-inference/08-kv-cache-management]]) :
+L'innovation pour réduire la taille du **[[02-inference/08-kv-cache-management|KV cache]]** (voir [[02-inference/08-kv-cache-management]]) :
 
 - **MHA** (Multi-Head Attention) : `n_heads_kv = n_heads_q`. Standard original.
 - **MQA** (Multi-Query Attention) : `n_heads_kv = 1`. Toutes les Q-heads partagent K et V. Très efficace mémoire, légère perte qualité.

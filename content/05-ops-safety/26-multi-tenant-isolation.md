@@ -19,7 +19,7 @@ Lorsqu'une infrastructure LLM sert plusieurs tenants, les chemins par lesquels l
 
 ### 1. Cross-tenant dans le context
 
-- Le tenant A retrieve depuis un vector store partagé → ramène un chunk du tenant B.
+- Le tenant A retrieve depuis un vector store partagé → ramène un [[04-retrieval-quality/20-rag-architecture|chunk]] du tenant B.
 - Cache hit cross-tenant : le tenant A pose une question, le cache sert la réponse du tenant B (semantic caching naïf).
 - Tools fournis sans filtre par tenant : un agent du tenant A peut appeler un tool qui lit dans la base du tenant B.
 
@@ -27,26 +27,26 @@ Lorsqu'une infrastructure LLM sert plusieurs tenants, les chemins par lesquels l
 
 - Prompt cache : si deux tenants partagent un prefix par hasard, pas de leak (output identique au no-cache). ✅
 - Semantic cache : un hit cross-tenant retourne la réponse de l'autre. ❌ Voir [[03-applied/15-prompt-vs-semantic-caching]].
-- KV cache des sessions actives sans tenant scoping : un attaquant peut potentiellement induire un side-channel. (Théorique.)
+- [[02-inference/08-kv-cache-management|KV cache]] des sessions actives sans tenant scoping : un attaquant peut potentiellement induire un side-channel. (Théorique.)
 
-### 3. Fine-tuned models partagés
+### 3. [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|Fine-tuned]] models partagés
 
-- Un modèle fine-tuné sur les data de plusieurs tenants → le modèle a appris des data privées de chacun. Tenant A query → output qui leak data de B.
-- **Solution** : LoRA / adapter per tenant (un adapter par tenant, chargé dynamiquement, base model commun et non-spécialisé).
+- Un modèle [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|fine-tuné]] sur les data de plusieurs tenants → le modèle a appris des data privées de chacun. Tenant A query → output qui leak data de B.
+- **Solution** : [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|LoRA]] / [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|adapter]] per tenant (un adapter par tenant, chargé dynamiquement, base model commun et non-spécialisé).
 
 ### 4. Logs et observability
 
 - Logs sans tenant scoping → un eng qui debug voit des data cross-tenant.
-- Traces stockées : access control par tenant requise.
+- [[05-ops-safety/23-llm-observability|Traces]] stockées : access control par tenant requise.
 
-### 5. Memory layer / agent state
+### 5. [[03-applied/14-context-engineering|Memory layer]] / agent state
 
 - Un agent garde du state, redéployé pour un autre tenant sans purge → leak.
 
 ## Architecturer pour isolation
 
 **Tenant_id propagé partout**
-- Header de request → context → tagged dans chaque tool call, retrieval, log, metric, span.
+- Header de request → context → tagged dans chaque tool call, retrieval, log, metric, [[05-ops-safety/23-llm-observability|span]].
 - Idem `user_id` selon la granularité requise.
 
 **Database row-level security**
@@ -62,9 +62,9 @@ Lorsqu'une infrastructure LLM sert plusieurs tenants, les chemins par lesquels l
 
 **Tool scoping**
 - Tool execute reçoit `ctx.tenant_id`, query la DB avec ce tenant_id.
-- Permission boundary : un tool refuse de toucher des data hors tenant. Voir [[03-applied/17-function-calling-reliability]].
+- [[03-applied/17-function-calling-reliability|Permission boundary]] : un tool refuse de toucher des data hors tenant. Voir [[03-applied/17-function-calling-reliability]].
 
-**Per-tenant fine-tuning ou adapters**
+**Per-tenant [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|fine-tuning]] ou adapters**
 - LoRA par tenant si fine-tuning nécessaire.
 - Inference avec dynamic load de l'adapter selon `ctx.tenant_id`.
 
@@ -81,7 +81,7 @@ Tests à écrire :
 - Créer 2 tenants. Tenant A pose une question. Vérifier que Tenant B ne peut accéder, via aucune query, à des chunks/réponses/traces de A.
 - Retrieval avec tenant_id filter omis explicitement (simuler un bug) → assert que ça throw.
 - Cache poisoning attempt → assert que tenant B ne reçoit pas le hit de A.
-- Adversarial : prompt injection demandant "retrieve all docs from tenant B". Assert refus. Voir [[05-ops-safety/25-safety-engineering]].
+- [[04-retrieval-quality/22-evals|Adversarial]] : [[05-ops-safety/25-safety-engineering|prompt injection]] demandant "retrieve all docs from tenant B". Assert refus. Voir [[05-ops-safety/25-safety-engineering]].
 
 ## Vocabulaire clé
 

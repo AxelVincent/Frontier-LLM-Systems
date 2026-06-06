@@ -9,7 +9,7 @@ aliases:
 ---
 
 > [!abstract] Point d'entrée du parcours "applied"
-> Cette note ouvre la section *Engineering autour du modèle*. Aucun prérequis dur — utile d'avoir survolé [[02-inference/09-prefill-vs-decode|09. Prefill vs decode]] pour comprendre pourquoi le coût d'un appel se décompose en TTFT et TPOT, mais non bloquant.
+> Cette note ouvre la section *Engineering autour du modèle*. Aucun prérequis dur — utile d'avoir survolé [[02-inference/09-prefill-vs-decode|09. Prefill vs decode]] pour comprendre pourquoi le coût d'un appel se décompose en [[02-inference/09-prefill-vs-decode|TTFT]] et [[02-inference/09-prefill-vs-decode|TPOT]], mais non bloquant.
 
 > [!tip] Notes liées
 > [[03-applied/14-context-engineering]] · [[03-applied/17-function-calling-reliability]] · [[03-applied/18-agent-guardrails]] · [[05-ops-safety/23-llm-observability]]
@@ -28,9 +28,9 @@ L'industrie a établi en 2023-2024 qu'une part majoritaire de la qualité perçu
 ## Composants d'un harness
 
 - **Boucle de contrôle** : l'event loop qui orchestre {model call → tool call → observation → model call}. Patterns canoniques : linéaire (single-shot), ReAct (think/act/observe), Plan-and-Execute (planification puis exécution), Tree-of-Thought (branches parallèles).
-- **State management** : ce qui persiste entre les tours, ce qui est compacté, ce qui est tronqué, ce qui est rejoué. Voir [[03-applied/14-context-engineering]].
+- **State management** : ce qui persiste entre les tours, ce qui est [[03-applied/14-context-engineering|compacté]], ce qui est tronqué, ce qui est rejoué. Voir [[03-applied/14-context-engineering]].
 - **Tool layer** : registry des outils, validation des arguments, exécution sandboxée, formatage des résultats. Voir [[03-applied/17-function-calling-reliability]].
-- **Recovery** : gestion des hallucinations de tool names, du JSON invalide, du dépassement de budget. Voir [[03-applied/16-structured-outputs]].
+- **Recovery** : gestion des [[01-architecture/07-post-training-alignment|hallucinations]] de tool names, du JSON invalide, du dépassement de budget. Voir [[03-applied/16-structured-outputs]].
 - **Termination logic** : signaux à partir desquels le harness conclut que la tâche est terminée. Voir [[03-applied/18-agent-guardrails]].
 - **Observability hooks** : émission de traces, metrics et events. Voir [[05-ops-safety/23-llm-observability]].
 
@@ -38,7 +38,7 @@ L'industrie a établi en 2023-2024 qu'une part majoritaire de la qualité perçu
 
 Le réflexe initial fréquent consiste à concentrer tous les problèmes dans un system prompt monolithique. Trois raisons de l'éviter :
 
-- Le prompt est facturé à **chaque** appel (hors prompt caching).
+- Le prompt est facturé à **chaque** appel (hors [[03-applied/15-prompt-vs-semantic-caching|prompt caching]]).
 - Cela rend non-déterministe des décisions qui devraient être déterministes ("appeler tool X si Y" relève de la logique applicative, pas du LLM).
 - Le code devient non-testable. Un harness modulaire se teste unitairement ; un prompt monolithique se "vibe-checke".
 

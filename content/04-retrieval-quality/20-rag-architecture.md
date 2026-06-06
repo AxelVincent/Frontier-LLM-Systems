@@ -23,7 +23,7 @@ query → embed query → search vector store (+ keyword) → rerank → select 
 Pattern devenu standard. Chaque étape porte cependant des dizaines de décisions, chacune pouvant dégrader la qualité.
 
 > [!example] Intuition — knowledge paramétrique vs non-paramétrique
-> RAG sépare deux sources de connaissance : la **paramétrique** (figée dans les poids du modèle au moment du pre-training) et la **non-paramétrique** (récupérée à la requête depuis un index externe). Le LLM devient une *fonction de synthèse* sur des chunks fournis à la volée, ce qui permet de mettre à jour la knowledge base sans réentraîner. Le coût se déplace : du training vers le retrieval, dont la qualité conditionne entièrement la sortie finale (garbage in, garbage out).
+> RAG sépare deux sources de connaissance : la **paramétrique** (figée dans les poids du modèle au moment du [[01-architecture/07-post-training-alignment|pre-training]]) et la **non-paramétrique** (récupérée à la requête depuis un index externe). Le LLM devient une *fonction de synthèse* sur des chunks fournis à la volée, ce qui permet de mettre à jour la knowledge base sans réentraîner. Le coût se déplace : du training vers le retrieval, dont la qualité conditionne entièrement la sortie finale (garbage in, garbage out).
 
 ## Chunking
 
@@ -32,7 +32,7 @@ Pattern devenu standard. Chaque étape porte cependant des dizaines de décision
 ### Stratégies
 
 **1. Fixed-size**
-- 512 ou 1024 tokens. Overlap 10-20% (pour ne pas couper au mauvais endroit).
+- 512 ou 1024 [[01-architecture/04-tokenization|tokens]]. Overlap 10-20% (pour ne pas couper au mauvais endroit).
 - Simple. Adapté à la plupart des cas.
 
 **2. Sentence-aware**
@@ -133,23 +133,23 @@ Après retrieval initial (top-100), rerank en top-10 avec un modèle plus puissa
 
 **Modèles** : Cohere Rerank v3, BGE Reranker v2.
 
-**Gain** : 10-30% sur recall@10 typiquement. Critique pour la qualité finale.
+**Gain** : 10-30% sur [[04-retrieval-quality/21-retrieval-evals|recall@10]] typiquement. Critique pour la qualité finale.
 
 ## Freshness
 
 RAG sur des docs qui changent → invalidation cache de retrieval, re-embed, re-index.
 
 - Stratégies : full re-index quotidien, delta indexing, real-time CDC.
-- TTL sur les embeddings (utilité limitée, mais pertinent sur des metadata).
+- [[03-applied/15-prompt-vs-semantic-caching|TTL]] sur les embeddings (utilité limitée, mais pertinent sur des metadata).
 - Versioning des chunks (savoir quel chunk a été utilisé pour quelle réponse — pour debug).
 
 ## Failure modes
 
 - **Bad chunk** : chunk pertinent existant mais raté par le search (recall failure).
 - **Distractor chunk** : retrieval ramène des chunks "voisins" qui ressemblent mais sont hors-sujet → LLM confus.
-- **Over-retrieval** : injection de 30 chunks, LLM lost-in-the-middle. Voir [[03-applied/14-context-engineering]].
+- **Over-retrieval** : injection de 30 chunks, LLM [[03-applied/14-context-engineering|lost-in-the-middle]]. Voir [[03-applied/14-context-engineering]].
 - **Stale chunk** : chunk pertinent mais obsolète.
-- **Coverage gap** : query parle d'un sujet absent du corpus → le modèle invente (hallucine sans signaler "je n'ai pas trouvé").
+- **Coverage gap** : query parle d'un sujet absent du corpus → le modèle invente ([[01-architecture/07-post-training-alignment|hallucine]] sans signaler "je n'ai pas trouvé").
 
 ## Vocabulaire clé
 

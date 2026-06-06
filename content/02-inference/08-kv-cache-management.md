@@ -29,7 +29,7 @@ KV cache size = 2 × n_layers × n_heads_kv × head_dim × seq_len × batch_size
 
 - Le `2` représente K et V stockés séparément.
 - `n_heads_kv` est déterminant : avec **GQA** (Grouped Query Attention) ou **MQA** (Multi-Query Attention), le nombre de heads pour K/V est inférieur au nombre de heads pour Q. Mistral 7B utilise GQA avec 8 KV heads (vs 32 Q heads) → KV cache divisé par 4.
-- `bytes_per_dtype` : 2 pour FP16/BF16, 1 pour FP8/INT8.
+- `bytes_per_dtype` : 2 pour [[02-inference/12-quantization-deep-dive|FP16]]/[[02-inference/12-quantization-deep-dive|BF16]], 1 pour [[02-inference/12-quantization-deep-dive|FP8]]/INT8.
 
 ## Exemple chiffré
 
@@ -38,7 +38,7 @@ Llama 70B en BF16, batch_size=1, seq_len=4096 :
 - n_layers = 80, n_heads_kv = 8 (GQA), head_dim = 128, bytes = 2
 - KV cache = 2 × 80 × 8 × 128 × 4096 × 1 × 2 = **1.34 GB**
 
-Pour Llama 70B en MHA (sans GQA) : facteur 8 supplémentaire (64 vs 8 KV heads) → **10.7 GB**. C'est ce qui motive l'adoption généralisée de GQA.
+Pour Llama 70B en [[01-architecture/01-transformer-architecture|MHA]] (sans GQA) : facteur 8 supplémentaire (64 vs 8 KV heads) → **10.7 GB**. C'est ce qui motive l'adoption généralisée de GQA.
 
 ## Problèmes à grande échelle
 
@@ -50,7 +50,7 @@ Servir N utilisateurs en parallèle, chacun avec une séquence de longueur varia
 
 ## Techniques de management
 
-**1. PagedAttention (vLLM, le canonique)** — voir [[02-inference/10-continuous-batching-paged-attention]]
+**1. PagedAttention ([[02-inference/10-continuous-batching-paged-attention|vLLM]], le canonique)** — voir [[02-inference/10-continuous-batching-paged-attention]]
 - KV cache stocké en **pages** de taille fixe (typiquement 16 tokens).
 - Une page table mappe chaque séquence à ses pages.
 - Bénéfice : fragmentation nulle, sharing trivial entre séquences qui partagent un prefix (mécanisme de prompt caching naturel).
@@ -82,7 +82,7 @@ Servir N utilisateurs en parallèle, chacun avec une séquence de longueur varia
 - L2 : CPU RAM (DRAM).
 - L3 : NVMe.
 - L4 : object storage.
-- TTL et migration entre tiers selon access pattern.
+- [[03-applied/15-prompt-vs-semantic-caching|TTL]] et migration entre tiers selon access pattern.
 
 ## Memory pressure : signaux et réponses
 
@@ -91,7 +91,7 @@ Servir N utilisateurs en parallèle, chacun avec une séquence de longueur varia
   1. Réduction du batch size maximal.
   2. Eviction plus agressive (TTL plus court).
   3. Troncature des contextes longs (sliding window).
-  4. Refus des requêtes longues (429 ou file d'attente).
+  4. Refus des requêtes longues ([[03-applied/19-model-routing-fallback|429]] ou file d'attente).
   5. Scale horizontal (latence d'application non négligeable).
 
 ## Vocabulaire clé

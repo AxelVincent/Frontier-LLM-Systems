@@ -61,7 +61,7 @@ Détail souvent négligé : input typiquement 3-5x moins cher que output. Une fe
 
 **Self-hosted** : pas de per-token, mais `cost = GPU_hours × GPU_hourly_rate`. Ces GPU_hours doivent être imputés aux features. Typiquement : `cost_per_request = GPU_hourly / (requests_per_hour)`.
 
-**Egress / network** : non-négligeable à grande échelle (streaming, embeddings storage).
+**Egress / network** : non-négligeable à grande échelle (streaming, [[04-retrieval-quality/20-rag-architecture|embeddings]] storage).
 
 ## Insights typiques
 

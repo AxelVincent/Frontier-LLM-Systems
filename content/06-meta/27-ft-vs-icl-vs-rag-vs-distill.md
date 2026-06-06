@@ -56,8 +56,8 @@ Update des weights du modèle sur un dataset spécifique.
 
 - **Full fine-tuning** : tous les weights bougent. Coûteux, risque de catastrophic forgetting.
 - **LoRA / QLoRA** : adapters bas-rang ajoutés, base model frozen. Cheap, deployable per-tenant. Voir [[05-ops-safety/26-multi-tenant-isolation]].
-- **SFT** : sur des paires (instruction, response).
-- **DPO / RLHF** : alignement sur préférences humaines.
+- **[[01-architecture/07-post-training-alignment|SFT]]** : sur des paires (instruction, response).
+- **[[01-architecture/07-post-training-alignment|DPO]] / [[01-architecture/07-post-training-alignment|RLHF]]** : alignement sur préférences humaines.
 
 **Quand c'est le bon outil** :
 - 1000+ exemples de high quality.
@@ -71,7 +71,7 @@ Update des weights du modèle sur un dataset spécifique.
 - Phase de prototypage : le cycle de fine-tune est lent par rapport à l'ICL.
 - Multi-tenant avec data privée : risque de leakage hors LoRA per-tenant.
 
-## Distillation
+## [[02-inference/11-speculative-quant-distill|Distillation]]
 
 Entraîner un modèle plus petit à imiter un modèle plus gros. Voir [[02-inference/11-speculative-quant-distill]].
 
@@ -93,7 +93,7 @@ Entraîner un modèle plus petit à imiter un modèle plus gros. Voir [[02-infer
 | Knowledge qui change (docs internes, prix) | Fine-tuning | RAG |
 | Style spécifique à transférer | RAG | Fine-tuning ou prompt eng riche |
 | 5 exemples de format | Fine-tuning | ICL few-shot |
-| Réduction latency/cost à scale | RAG | Quantization + distillation |
+| Réduction latency/cost à scale | RAG | [[02-inference/12-quantization-deep-dive|Quantization]] + distillation |
 | Multi-tenant avec data privée | Full fine-tuning shared | LoRA per-tenant ou RAG par-tenant |
 | Edge deployment | RAG (besoin du retrieval store) | Distilled small model embedded |
 | Cas où le base model est déjà bon | Fine-tuning (overengineering) | ICL |
@@ -104,7 +104,7 @@ Rarement un seul des quatre :
 - **RAG + ICL** : retrieved chunks comme contexte, plus few-shot examples du format de réponse attendu. **Pattern dominant 2024-2025.**
 - **Fine-tuning + RAG** : fine-tune pour le style, RAG pour les faits.
 - **Distillation + Fine-tuning** : distiller un gros teacher en student, puis fine-tuner sur edge cases.
-- **Distillation + Quantization** : Mistral Small (distillé) servi en FP8 quantized.
+- **Distillation + Quantization** : Mistral Small (distillé) servi en [[02-inference/12-quantization-deep-dive|FP8]] quantized.
 
 ## Decision framework
 

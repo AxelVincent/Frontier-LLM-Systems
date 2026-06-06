@@ -17,7 +17,7 @@ Un système LLM mature ne sert pas un seul modèle. Il sert une **gamme**. Le bo
 
 - Complexité de la tâche.
 - Latency SLA.
-- Cost budget.
+- [[03-applied/18-agent-guardrails|Cost budget]].
 - Disponibilité (provider down).
 - Tenant tier (free vs enterprise).
 - A/B test en cours.

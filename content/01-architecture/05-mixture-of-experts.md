@@ -13,18 +13,18 @@ aliases:
 
 ## Le concept
 
-Dans un Transformer dense, chaque token traverse l'intégralité des paramètres à chaque forward pass. Dans un Transformer **Mixture of Experts (MoE)**, le bloc FFN est remplacé par un ensemble d'**experts** (FFN parallèles), et un **router** sélectionne dynamiquement les experts activés pour chaque token.
+Dans un Transformer dense, chaque [[01-architecture/04-tokenization|token]] traverse l'intégralité des paramètres à chaque forward pass. Dans un Transformer **Mixture of Experts (MoE)**, le bloc [[01-architecture/01-transformer-architecture|FFN]] est remplacé par un ensemble d'**experts** (FFN parallèles), et un **router** sélectionne dynamiquement les experts activés pour chaque token.
 
 Conséquence : on dispose d'un modèle avec un grand nombre de paramètres **totaux**, mais un faible nombre de paramètres **actifs** par token. Le compute par token reste comparable à un modèle dense beaucoup plus petit, alors que la capacité représentationnelle approche celle d'un modèle dense beaucoup plus gros.
 
 > [!example] Intuition — sparse activation
-> MoE est une forme de **routage conditionnel** : le FFN devient un pool de E sous-réseaux, et un dispatcher (le router) sélectionne k experts par token. La capacité représentationnelle scale avec E ; le coût compute par token scale avec k. Cette décorrélation permet d'augmenter agressivement le nombre de paramètres totaux sans inflation proportionnelle du FLOP/token — au prix d'un coût mémoire qui, lui, reste proportionnel à E.
+> MoE est une forme de **routage conditionnel** : le [[01-architecture/01-transformer-architecture|FFN]] devient un pool de E sous-réseaux, et un dispatcher (le router) sélectionne k experts par [[01-architecture/04-tokenization|token]]. La capacité représentationnelle scale avec E ; le coût compute par token scale avec k. Cette décorrélation permet d'augmenter agressivement le nombre de paramètres totaux sans inflation proportionnelle du FLOP/token — au prix d'un coût mémoire qui, lui, reste proportionnel à E.
 
 ## Architecture
 
 Pour chaque token (au niveau du bloc FFN) :
 
-1. Le **router** (typiquement une simple projection linéaire suivie d'un softmax) calcule un score pour chacun des E experts.
+1. Le **router** (typiquement une simple projection linéaire suivie d'un [[01-architecture/01-transformer-architecture|softmax]]) calcule un score pour chacun des E experts.
 2. Les **top-k experts** sont sélectionnés (typiquement k=2).
 3. Le token passe à travers ces k experts.
 4. Les outputs sont combinés pondérés par les scores du router.
@@ -84,7 +84,7 @@ Certains experts sont **toujours activés** (DeepSeek). Capture les patterns com
 - **Switch Transformer** (Google, 2021) : premier MoE à l'échelle, k=1.
 - **GShard** (Google) : MoE avec sharding distribué.
 - **Mixtral 8x7B / 8x22B** (Mistral, 2024) : 8 experts, k=2, 47B/141B total.
-- **DeepSeek-V2 / V3** : MoE avec MLA, fine-grained experts, auxiliary-loss-free, 236B/671B total, ~21B/37B actifs.
+- **DeepSeek-V2 / V3** : MoE avec [[01-architecture/01-transformer-architecture|MLA]], fine-grained experts, auxiliary-loss-free, 236B/671B total, ~21B/37B actifs.
 - **Qwen2-MoE**, **Grok-1** (314B total).
 
 ## Inference MoE
@@ -98,10 +98,10 @@ Les experts sont distribués sur plusieurs GPUs. Chaque token est routé via com
 
 ### Mémoire vs compute
 
-MoE en inference a une particularité : le **compute** par token est faible (peu de params actifs), mais la **mémoire** nécessaire est élevée (tous les experts doivent être chargés au cas où). Souvent mémoire-bound même en prefill.
+MoE en inference a une particularité : le **compute** par token est faible (peu de params actifs), mais la **mémoire** nécessaire est élevée (tous les experts doivent être chargés au cas où). Souvent [[02-inference/09-prefill-vs-decode|mémoire-bound]] même en [[02-inference/09-prefill-vs-decode|prefill]].
 
 Stratégies :
-- Offloading des experts inactifs sur CPU RAM.
+- [[02-inference/08-kv-cache-management|Offloading]] des experts inactifs sur CPU RAM.
 - Expert pruning offline (élimination des experts rarement activés).
 
 ## Trade-offs

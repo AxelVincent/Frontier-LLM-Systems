@@ -13,14 +13,14 @@ aliases:
 
 > [!example] Intuition — deux mécanismes orthogonaux
 > Les deux portent le nom *cache* mais opèrent à des niveaux différents :
-> - **Prompt caching** mémoize le **KV cache** d'un préfixe. Match exact byte-à-byte, lookup côté provider, **résultat identique** à un appel non caché — c'est un cache de *compute*.
-> - **Semantic caching** mémoize des **réponses** complètes, indexées par embedding de la requête. Match approximatif sur la similarité cosinus, **résultat potentiellement différent** d'un appel non caché — c'est un cache de *décision*.
+> - **Prompt caching** mémoize le **[[02-inference/08-kv-cache-management|KV cache]]** d'un préfixe. Match exact byte-à-byte, lookup côté provider, **résultat identique** à un appel non caché — c'est un cache de *compute*.
+> - **Semantic caching** mémoize des **réponses** complètes, indexées par embedding de la requête. Match approximatif sur la [[04-retrieval-quality/20-rag-architecture|similarité cosinus]], **résultat potentiellement différent** d'un appel non caché — c'est un cache de *décision*.
 >
 > Le premier est toujours safe ; le second introduit un risque qualité à calibrer (seuil de similarité, scope par tenant, invalidation).
 
 ## Deux mécanismes distincts
 
-**Prompt caching** (Anthropic, OpenAI, Mistral) : un prefix de prompt est marqué comme cachable. Le serveur conserve le **KV cache** du prefix entre les requêtes. Toute requête ultérieure partageant ce prefix bénéficie d'un prefill évité (typiquement 90% de réduction de latence et de coût sur la portion cachée).
+**Prompt caching** (Anthropic, OpenAI, Mistral) : un prefix de prompt est marqué comme cachable. Le serveur conserve le **[[02-inference/08-kv-cache-management|KV cache]]** du prefix entre les requêtes. Toute requête ultérieure partageant ce prefix bénéficie d'un [[02-inference/09-prefill-vs-decode|prefill]] évité (typiquement 90% de réduction de latence et de coût sur la portion cachée).
 
 **Semantic caching** : la requête utilisateur est hashée sémantiquement (via embedding) et une réponse précédente d'une requête sémantiquement proche est servie, sans appel au modèle.
 
@@ -63,7 +63,7 @@ Les deux résolvent des problèmes différents.
 
 ### Échecs
 
-- **Faux positifs sémantiques** : "comment annuler mon abonnement" vs "comment **renouveler** mon abonnement" ont des embeddings très proches mais des réponses opposées. Mitigation : seuil élevé + reranker.
+- **Faux positifs sémantiques** : "comment annuler mon abonnement" vs "comment **renouveler** mon abonnement" ont des [[04-retrieval-quality/20-rag-architecture|embeddings]] très proches mais des réponses opposées. Mitigation : seuil élevé + [[04-retrieval-quality/20-rag-architecture|reranker]].
 - **Stale data** : la réponse cachée référence un état qui a changé depuis.
 - **Personalisation** : la réponse cachée d'un user A servie à un user B constitue un anti-pattern et un leak de données. Voir [[05-ops-safety/26-multi-tenant-isolation]].
 - **Coût de l'embedding** : non-trivial à fort volume.

@@ -22,7 +22,7 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 **Causes** :
 - Trop de tools dans le registry (>20-30 = dégradation).
 - Tool descriptions ambiguës.
-- Few-shot examples mal-alignés avec les real-world inputs.
+- [[06-meta/27-ft-vs-icl-vs-rag-vs-distill|Few-shot examples]] mal-alignés avec les real-world inputs.
 
 **Mitigations** :
 - Strict schema validation côté harness (refus et retry). Voir [[03-applied/17-function-calling-reliability]].
@@ -35,13 +35,13 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 **Symptôme** : réponse non parseable comme JSON.
 
 **Causes** :
-- Pas de structured output mode.
+- Pas de [[03-applied/16-structured-outputs|structured output mode]].
 - max_tokens atteint en milieu de génération.
 - Le modèle entoure le JSON de markdown blocks.
 - Caractères mal échappés dans des strings.
 
 **Mitigations** :
-- Constrained decoding / JSON mode. Voir [[03-applied/16-structured-outputs]].
+- [[03-applied/16-structured-outputs|Constrained decoding]] / [[03-applied/16-structured-outputs|JSON mode]]. Voir [[03-applied/16-structured-outputs]].
 - Parser tolérant (json5, dirtyjson).
 - max_tokens bumpé.
 - Retry avec error message en input.
@@ -52,9 +52,9 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 
 **Causes** :
 - Re-index pipeline cassé.
-- TTL trop long sur les embeddings.
+- [[03-applied/15-prompt-vs-semantic-caching|TTL]] trop long sur les [[04-retrieval-quality/20-rag-architecture|embeddings]].
 - Doc mis à jour mais ancien chunk non invalidé.
-- Cached responses (semantic cache) qui survivent au changement de fact.
+- Cached responses ([[03-applied/15-prompt-vs-semantic-caching|semantic cache]]) qui survivent au changement de fact.
 
 **Mitigations** :
 - Pipeline de re-indexing surveillé (alerte sur lag).
@@ -67,19 +67,19 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 **Symptôme** : agent qui boucle sans terminer et consomme tokens et budget sans s'arrêter.
 
 **Causes** :
-- Pas de loop budget.
-- Pas de stuck detection.
+- Pas de [[03-applied/18-agent-guardrails|loop budget]].
+- Pas de [[03-applied/18-agent-guardrails|stuck detection]].
 - Modèle qui ne sait pas comment "finir".
 
 **Mitigations** :
 - Loop budget hard (max 20 iter). Voir [[03-applied/18-agent-guardrails]].
 - Stuck detection sur hash des K dernières actions.
-- Wallclock budget + cost budget kill switch.
+- [[03-applied/18-agent-guardrails|Wallclock budget]] + [[03-applied/18-agent-guardrails|cost budget]] kill switch.
 - Tool `submit_final_answer` ou `done` explicite.
 
 ## 5. Silent eval regressions
 
-**Symptôme** : un changement de prompt / modèle / retrieval introduit une régression de qualité non détectée parce que le golden set ne couvre pas le cas.
+**Symptôme** : un changement de prompt / modèle / retrieval introduit une régression de qualité non détectée parce que le [[04-retrieval-quality/22-evals|golden set]] ne couvre pas le cas.
 
 **Causes** :
 - Golden set trop petit.
@@ -98,12 +98,12 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 **Symptôme** : un user reçoit une réponse cached d'un autre user (semantic cache) ou le cache contient des données malveillantes injectées.
 
 **Causes** :
-- Cache key sans tenant_id / user_id.
+- Cache key sans [[05-ops-safety/26-multi-tenant-isolation|tenant_id]] / user_id.
 - Pas de validation des inputs avant cache write.
 
 **Mitigations** :
 - Cache key incluant tenant + user pour data sensible. Voir [[05-ops-safety/26-multi-tenant-isolation]].
-- Validate output before caching (PII check, schema check).
+- Validate output before caching ([[05-ops-safety/25-safety-engineering|PII check]], schema check).
 - TTL court sur les caches user-facing.
 
 ## 7. Prompt drift
@@ -112,13 +112,13 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 
 **Causes** :
 - Le provider a updated le modèle backend sans changement de version (cas des auto-updated models).
-- Distribution des inputs change (concept drift).
+- Distribution des inputs change ([[05-ops-safety/23-llm-observability|concept drift]]).
 - Le système consomme ses propres outputs (auto-réinjection).
 
 **Mitigations** :
 - Pin version explicite du modèle (mistral-large-2411 vs mistral-large).
 - Eval continue sur sample.
-- Drift detection (embedding-based, statistical).
+- [[05-ops-safety/23-llm-observability|Drift detection]] (embedding-based, statistical).
 
 ## 8. Cost spikes
 
@@ -127,30 +127,30 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 **Causes** :
 - Bug dans un agent qui cause un runaway.
 - New feature shippé sans cost monitoring.
-- Tool definition qui explose en tokens (long descriptions à chaque call).
+- Tool definition qui explose en [[01-architecture/04-tokenization|tokens]] (long descriptions à chaque call).
 - User abuse (single user qui spam).
 - Prompt caching breakpoint qui change → cache miss systématique.
 
 **Mitigations** :
 - Cost monitoring per feature, per tenant, per user. Voir [[05-ops-safety/24-cost-attribution]].
 - Alertes anomaly (cost burn rate > 2x baseline).
-- Rate limits per user et per workflow.
-- Budget enforcement.
+- [[03-applied/19-model-routing-fallback|Rate limits]] per user et per workflow.
+- [[03-applied/18-agent-guardrails|Budget enforcement]].
 
 ## 9. Latency spikes
 
-**Symptôme** : p99 explose, certaines requests timeout.
+**Symptôme** : [[05-ops-safety/23-llm-observability|p99]] explose, certaines requests timeout.
 
 **Causes** :
 - Provider degradation.
 - Prompt length spike (un user envoie 100k tokens).
-- KV cache pression (server saturé). Voir [[02-inference/08-kv-cache-management]].
+- [[02-inference/08-kv-cache-management|KV cache]] pression (server saturé). Voir [[02-inference/08-kv-cache-management]].
 - Cold start sur autoscaling.
 - Network issue.
 
 **Mitigations** :
-- Hedging.
-- Circuit breaker.
+- [[03-applied/19-model-routing-fallback|Hedging]].
+- [[03-applied/19-model-routing-fallback|Circuit breaker]].
 - max prompt length enforcement (refus ou troncature).
 - Provisioned capacity en peak hours.
 - Multi-region.
@@ -166,11 +166,11 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 
 **Mitigations** :
 - Tool exec retournant toujours un status explicite (success/failure/partial).
-- Idempotency keys.
+- [[03-applied/17-function-calling-reliability|Idempotency keys]].
 - Compensating actions sur partial failures.
 - Reconciliation jobs offline.
 
-## 11. PII leakage
+## 11. [[05-ops-safety/25-safety-engineering|PII]] leakage
 
 **Symptôme** : la réponse à l'user A contient des PII de B.
 
@@ -186,21 +186,21 @@ Catalogue des défaillances réelles observées en production. Connaître leurs 
 - Differential privacy ou LoRA per tenant pour fine-tuning.
 - Audit logs scrutés.
 
-## 12. Jailbreak / prompt injection success
+## 12. [[05-ops-safety/25-safety-engineering|Jailbreak]] / [[05-ops-safety/25-safety-engineering|prompt injection]] success
 
 **Symptôme** : le modèle exécute une action qu'il ne devrait pas (révéler system prompt, faire une action interdite, dire des choses inappropriées).
 
 **Causes** :
-- Pas de input filtering.
+- Pas de [[05-ops-safety/25-safety-engineering|input filtering]].
 - Tool permissions trop laxistes.
 - Système qui consomme du tool output non validé.
 
 **Mitigations** :
 - Input classifier.
-- Output filtering.
+- [[05-ops-safety/25-safety-engineering|Output filtering]].
 - Strict tool permissions au niveau code. Voir [[05-ops-safety/25-safety-engineering]].
-- Trust boundary modeling.
-- Red team continue.
+- [[05-ops-safety/25-safety-engineering|Trust boundary]] modeling.
+- [[04-retrieval-quality/22-evals|Red team]] continue.
 
 ## Patterns transversaux
 

@@ -16,7 +16,7 @@ aliases:
 Le modèle reçoit une liste d'outils avec leurs schemas. Il choisit lequel appeler et avec quels arguments. En théorie, le flux est propre. En pratique :
 
 - **Wrong tool** : le modèle choisit `delete_user` au lieu de `archive_user`.
-- **Hallucinated tool** : le modèle invente un tool inexistant (`send_carrier_pigeon`).
+- **[[06-meta/29-production-failure-modes|Hallucinated tool]]** : le modèle invente un tool inexistant (`send_carrier_pigeon`).
 - **Wrong args** : types corrects mais valeurs incorrectes (user_id du mauvais user).
 - **Hallucinated args** : champs absents du schema.
 - **Misformatted args** : dates au mauvais format, enums presque-corrects.
@@ -53,9 +53,9 @@ Un bon contrat de tool comporte :
 **5. Limites explicites en description**
 - "Max 100 items per call. For larger sets, paginate."
 
-## Validation côté harness (essentielle)
+## Validation côté [[03-applied/13-harness-engineering|harness]] (essentielle)
 
-Les arguments du modèle ne doivent jamais être considérés comme de confiance. Toujours valider côté harness avant exécution :
+Les arguments du modèle ne doivent jamais être considérés comme de confiance. Toujours valider côté [[03-applied/13-harness-engineering|harness]] avant exécution :
 
 ```typescript
 async function executeTool(call: ToolCall, ctx: Context) {
@@ -86,8 +86,8 @@ async function executeTool(call: ToolCall, ctx: Context) {
 
 Critique pour les tools avec side effects (write to DB, send email, charge payment).
 
-- **Idempotency key** : hash de (tool_name + canonicalized_args + tenant + session_id). Une réception du même key dans une fenêtre de TTL retourne le résultat caché au lieu de réexécuter.
-- **Pourquoi** : l'agent loop peut décider de retry, le modèle peut générer le même call deux fois, un network retry peut dupliquer.
+- **Idempotency key** : hash de (tool_name + canonicalized_args + tenant + session_id). Une réception du même key dans une fenêtre de [[03-applied/15-prompt-vs-semantic-caching|TTL]] retourne le résultat caché au lieu de réexécuter.
+- **Pourquoi** : l'[[03-applied/13-harness-engineering|agent loop]] peut décider de retry, le modèle peut générer le même call deux fois, un network retry peut dupliquer.
 - **Sans idempotency** : doublons de paiement, doublons d'email, état corrompu.
 
 ## Argument validation approfondie
@@ -98,7 +98,7 @@ Au-delà du schema match :
 - **Business invariants** : `amount > 0`, `start_date < end_date`.
 - **Permission scoping** : l'utilisateur a-t-il le droit d'agir sur cette ressource ?
 - **Tenant scoping** : la ressource appartient-elle au tenant courant ? Voir [[05-ops-safety/26-multi-tenant-isolation]].
-- **Rate limiting per tool** : certains tools coûteux (send_sms, gpt-4-api-call) doivent avoir des budgets par session/user.
+- **[[03-applied/19-model-routing-fallback|Rate limiting]] per tool** : certains tools coûteux (send_sms, gpt-4-api-call) doivent avoir des budgets par session/user.
 
 ## Patterns de défaillance subtils
 

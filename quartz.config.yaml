@@ -206,7 +206,6 @@ plugins:
     options:
       links:
         GitHub: https://github.com/AxelVincent/Frontier-LLM-Systems
-        Discord Community: https://discord.gg/cRFFHYye7t
   - source: github:quartz-community/recent-notes
     enabled: false
   - source: github:quartz-community/spacer

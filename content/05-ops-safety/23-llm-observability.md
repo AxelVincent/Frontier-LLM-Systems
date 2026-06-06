@@ -64,7 +64,7 @@ Standard : **OpenTelemetry** + extensions LLM-specific (semantic conventions for
 - `error` / `error_type` / `error_message`
 - `retry_count` / `fallback_invoked`
 
-Et le **prompt complet** (input messages, tool definitions) + **response** stockés (PII handling requis, voir [[05-ops-safety/25-safety-engineering]]).
+Et le **prompt complet** (input messages, tool definitions) + **response** stockés ([[05-ops-safety/25-safety-engineering|PII]] handling requis, voir [[05-ops-safety/25-safety-engineering]]).
 
 ## Outils
 
@@ -100,8 +100,8 @@ Méthodes de détection :
 - Cost : $/hour, $ par feature, $ par tenant.
 - Quality : eval pass rate (continuous sample), thumbs up/down, regeneration rate.
 - Tool usage : tool call frequency, tool success rate.
-- Cache : prompt cache hit rate, semantic cache hit rate.
-- Capacity : GPU utilization, queue depth, KV cache utilization.
+- Cache : [[03-applied/15-prompt-vs-semantic-caching|prompt cache]] hit rate, [[03-applied/15-prompt-vs-semantic-caching|semantic cache]] hit rate.
+- Capacity : GPU utilization, queue depth, [[02-inference/08-kv-cache-management|KV cache]] utilization.
 
 ## Alerting
 

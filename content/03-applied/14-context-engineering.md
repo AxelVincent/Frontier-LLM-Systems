@@ -22,14 +22,14 @@ aliases:
 1. **Lost in the middle** : les modèles présentent un biais d'attention vers le début et la fin du contexte. Placer une information critique au milieu d'un long contexte réduit significativement la probabilité qu'elle soit utilisée.
 
 > [!example] Intuition
-> Un context window de 200k tokens définit une *capacité*, pas une *qualité d'attention uniforme*. Les benchmarks empiriques (NIAH, RULER) montrent un biais positionnel marqué : précision élevée aux extrémités, dégradée au milieu. Le context engineering consiste à exploiter cette structure — placer les éléments critiques en début ou en fin, élaguer le bruit, ordonner les sections — au lieu de traiter la fenêtre comme un buffer plat.
-2. **Attention dilution** : la qualité d'attention se dégrade avec le volume de tokens. Dans un contexte de 100k tokens contenant un token critique, la probabilité que le modèle l'ignore n'est pas négligeable.
-3. **Coût** : le prefill scale linéairement (en compute) avec la taille du contexte. Long contexte = latence prefill + coût proportionnels. Voir [[02-inference/09-prefill-vs-decode]].
+> Un context window de 200k [[01-architecture/04-tokenization|tokens]] définit une *capacité*, pas une *qualité d'attention uniforme*. Les benchmarks empiriques (NIAH, RULER) montrent un biais positionnel marqué : précision élevée aux extrémités, dégradée au milieu. Le context engineering consiste à exploiter cette structure — placer les éléments critiques en début ou en fin, élaguer le bruit, ordonner les sections — au lieu de traiter la fenêtre comme un buffer plat.
+2. **Attention dilution** : la qualité d'attention se dégrade avec le volume de [[01-architecture/04-tokenization|tokens]]. Dans un contexte de 100k tokens contenant un token critique, la probabilité que le modèle l'ignore n'est pas négligeable.
+3. **Coût** : le [[02-inference/09-prefill-vs-decode|prefill]] scale linéairement (en compute) avec la taille du contexte. Long contexte = latence prefill + coût proportionnels. Voir [[02-inference/09-prefill-vs-decode]].
 4. **Needle-in-haystack ≠ reasoning over haystack** : un modèle peut **retrouver** une information dans un contexte de 1M tokens (needle test), mais ne peut pas **raisonner** dessus. Confondre les deux capacités introduit des bugs subtils en production.
 
 ## Techniques
 
-- **Retrieval-augmented** : sélectionner top-k chunks pertinents au lieu d'injecter le document complet. Voir [[04-retrieval-quality/20-rag-architecture]].
+- **Retrieval-augmented** : sélectionner top-k [[04-retrieval-quality/20-rag-architecture|chunks]] pertinents au lieu d'injecter le document complet. Voir [[04-retrieval-quality/20-rag-architecture]].
 - **Compaction** : résumer les tours anciens d'une conversation longue.
 - **Sliding window** : ne conserver que les N derniers tours.
 - **Memory layer** : extraire les faits durables d'une conversation, les persister dans un store séparé, et les injecter sélectivement.
@@ -37,9 +37,9 @@ aliases:
 - **Ordering** : information critique en début et en fin, structure stable, absence de préambules dilatoires.
 - **Pruning** : retrait dynamique des tools et exemples non-pertinents à la requête courante.
 
-## Anti-pattern : "200k tokens disponibles, autant les utiliser"
+## Anti-pattern : "200k [[01-architecture/04-tokenization|tokens]] disponibles, autant les utiliser"
 
-Un context window de 200k tokens ne signifie pas qu'il faille en injecter 200k. Les harness matures sélectionnent agressivement. Raisons : coût, lost-in-the-middle, et latence prefill incompatible avec une UX interactive.
+Un context window de 200k tokens ne signifie pas qu'il faille en injecter 200k. Les [[03-applied/13-harness-engineering|harness]] matures sélectionnent agressivement. Raisons : coût, lost-in-the-middle, et latence prefill incompatible avec une UX interactive.
 
 ## Vocabulaire clé
 

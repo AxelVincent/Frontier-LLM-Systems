@@ -62,7 +62,7 @@ Pour un MatMul `Y = X · W` :
 
 Le pattern canonique (Shoeybi et al. 2019) :
 - Dans le bloc attention : split column-parallel sur les Q/K/V, puis row-parallel sur la projection finale. Un seul all-reduce par bloc.
-- Dans le FFN : column-parallel sur W_1, row-parallel sur W_2.
+- Dans le [[01-architecture/01-transformer-architecture|FFN]] : column-parallel sur W_1, row-parallel sur W_2.
 
 TP fonctionne bien jusqu'à TP=8 (un nœud single-GPU avec NVLink). Au-delà, la communication inter-nœuds dégrade fortement.
 
@@ -100,7 +100,7 @@ En production, les trois (ou quatre) axes sont combinés. Un modèle de 175B+ pe
 
 Le choix dépend du trade-off entre communication intra-nœud (rapide, NVLink) et inter-nœud (plus lent, InfiniBand).
 
-## Expert Parallelism (pour MoE)
+## Expert Parallelism (pour [[01-architecture/05-mixture-of-experts|MoE]])
 
 Spécifique à MoE (voir [[01-architecture/05-mixture-of-experts]]). Les experts sont distribués entre GPUs. Chaque token est routé via communication **all-to-all** vers le GPU hébergeant son expert. Le all-to-all est l'opération critique, à optimiser pour ne pas devenir un bottleneck.
 
